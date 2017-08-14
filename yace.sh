@@ -28,12 +28,17 @@ case $key in
     ;;
     # jmx 文件路径
     -m|--jmx)
-    jmxFile="$2"
+    jmxFilePath="$2"
     shift # past argument
     ;;
     # zip文件保存路径
     -z|--zip)
     zipPath="$2"
+    shift # past argument
+    ;;
+    # 不用read
+    -n|--no)
+    no="$2"
     shift # past argument
     ;;
     --default)
@@ -55,13 +60,14 @@ fi
 
 
 # jmeterShellPath=$1
-# jmxFile=$2
+# jmxFilePath=$2
+echo $no
 
 
 # 判断jmeter路径是否为空
-if [ ! ${jmeterShellPath} ] || [ ! ${jmxFile} ]
+if [ ! ${jmeterShellPath} ] || [ ! ${jmxFilePath} ]
 then
-    printf "%s\n" "使用方法"
+    printf "%s\n" "缺少相关参数"
     printf "%s\n" "-j  jmeter sh文件路径, 通常在 jmeter/bin 目录下"
     printf "%s\n" "-m  jmx文件路径"
     printf "%s\n" "-z  zip文件保存路径"
@@ -74,14 +80,14 @@ fi
 #echo $a
 
 # 文件名zlr
-jtlFile=${jmxFile%.*}
+jtlFile=${jmxFilePath%.*}
 
 # 线程组设置
 
 
 
 # 重置所有 线程组到1
-# sed -i "s/\"ThreadGroup.num_threads\">[0-9]*/\"ThreadGroup.num_threads\">1/g" $jmxFile
+# sed -i "s/\"ThreadGroup.num_threads\">[0-9]*/\"ThreadGroup.num_threads\">1/g" $jmxFilePath
 
 # 开始运行
 # sed -i 's/"ThreadGroup.num_threads">1/"ThreadGroup.num_threads">100/g' $a
@@ -147,17 +153,17 @@ printf "\e[31m %-5s\e[0m\n" "$NUM_THREADS" # 颜色为红色
 screen_echo
 
 # 重置控制器
-sed -i "s/\"ThreadGroup.scheduler\">[a-zA-Z]*/\"ThreadGroup.scheduler\">false/g" $jmxFile
+sed -i "s/\"ThreadGroup.scheduler\">[a-zA-Z]*/\"ThreadGroup.scheduler\">false/g" $jmxFilePath
 
 auto_stress_test() {
 
 
     jtlFileName=${jtlFile}_${NUM_THREADS}_1.jtl
-    # 暂时先放在这里 , 后续要指定目录
-    jtlFilePath=$(pwd)/${jtlFileName}.zip
+    # 暂时先放在这里 , 后续要指定目录   ${jtlFileName##*/} 去掉 / 之前的路径
+    jtlFilePath=$zipPath/${jtlFileName##*/}.zip
     echo $jtlFilePath
-    sed -i "s/\"ThreadGroup.num_threads\">[0-9]*/\"ThreadGroup.num_threads\">$NUM_THREADS/g" $jmxFile
-    sh $jmeterShellPath -n -t $jmxFile -l $jtlFileName
+    sed -i "s/\"ThreadGroup.num_threads\">[0-9]*/\"ThreadGroup.num_threads\">$NUM_THREADS/g" $jmxFilePath
+    sh $jmeterShellPath -n -t $jmxFilePath -l $jtlFileName
     zip ${jtlFilePath} ${jtlFileName}
     # tar -zcvf /home/xahot.tar.gz /xahot
 }
@@ -166,41 +172,41 @@ auto_stress_test() {
 auto_stress_test
 
 
-# sed -i "s/\"ThreadGroup.num_threads\">[0-9]*/\"ThreadGroup.num_threads\">${num_threads[1]}/g" $jmxFile
-# sh jmeterShellPath -n -t $jmxFile -l ${jtlFile}_${num_threads[1]}_1.jtl
-# sed -i "s/\"ThreadGroup.num_threads\">[0-9]*/\"ThreadGroup.num_threads\">${num_threads[2]}/g" $jmxFile
-# sh jmeterShellPath -n -t $jmxFile -l ${jtlFile}_${num_threads[2]}_1.jtl
-# sed -i "s/\"ThreadGroup.num_threads\">[0-9]*/\"ThreadGroup.num_threads\">${num_threads[3]}/g" $jmxFile
-# sh jmeterShellPath -n -t $jmxFile -l ${jtlFile}_${num_threads[3]}_1.jtl
+# sed -i "s/\"ThreadGroup.num_threads\">[0-9]*/\"ThreadGroup.num_threads\">${num_threads[1]}/g" $jmxFilePath
+# sh jmeterShellPath -n -t $jmxFilePath -l ${jtlFile}_${num_threads[1]}_1.jtl
+# sed -i "s/\"ThreadGroup.num_threads\">[0-9]*/\"ThreadGroup.num_threads\">${num_threads[2]}/g" $jmxFilePath
+# sh jmeterShellPath -n -t $jmxFilePath -l ${jtlFile}_${num_threads[2]}_1.jtl
+# sed -i "s/\"ThreadGroup.num_threads\">[0-9]*/\"ThreadGroup.num_threads\">${num_threads[3]}/g" $jmxFilePath
+# sh jmeterShellPath -n -t $jmxFilePath -l ${jtlFile}_${num_threads[3]}_1.jtl
 
 # # 设置循环次数
 
 # # 控制器  不需要改
-# sed -i 's/"LoopController.loops">1/"LoopController.loops">-1/g' $jmxFile
+# sed -i 's/"LoopController.loops">1/"LoopController.loops">-1/g' $jmxFilePath
 
 # # 控制器 不需要改
-# sed -i 's/"ThreadGroup.scheduler">false/"ThreadGroup.scheduler">true/g' $jmxFile
+# sed -i 's/"ThreadGroup.scheduler">false/"ThreadGroup.scheduler">true/g' $jmxFilePath
 
 # # 时间: 3分钟
-# sed -i 's/"ThreadGroup.duration">/"ThreadGroup.duration">180/g' $jmxFile
+# sed -i 's/"ThreadGroup.duration">/"ThreadGroup.duration">180/g' $jmxFilePath
 
 # # 并发数 修改回1000
-# sed -i 's/"ThreadGroup.num_threads">5000/"ThreadGroup.num_threads">1000/g' $jmxFile
+# sed -i 's/"ThreadGroup.num_threads">5000/"ThreadGroup.num_threads">1000/g' $jmxFilePath
 
 # # sh jmeterShellPath -n -t $a -l ${b}_100_3min.jtl
 # # sed -i 's/"ThreadGroup.num_threads">100/"ThreadGroup.num_threads">500/g' $a
 # # sh jmeterShellPath -n -t $a -l ${b}_500_3min.jtl
-# sed -i 's/"ThreadGroup.num_threads">1000/"ThreadGroup.num_threads">1000/g' $jmxFile
-# sh jmeterShellPath -n -t $jmxFile -l ${jtlFile}_${num_threads[1]}_3min.jtl
-# sed -i 's/"ThreadGroup.num_threads">1000/"ThreadGroup.num_threads">3000/g' $jmxFile
-# sh jmeterShellPath -n -t $jmxFile -l ${jtlFile}_${num_threads[2]}_3min.jtl
-# sed -i 's/"ThreadGroup.num_threads">3000/"ThreadGroup.num_threads">5000/g' $jmxFile
-# sh jmeterShellPath -n -t $jmxFile -l ${jtlFile}_${num_threads[3]}_3min.jtl
+# sed -i 's/"ThreadGroup.num_threads">1000/"ThreadGroup.num_threads">1000/g' $jmxFilePath
+# sh jmeterShellPath -n -t $jmxFilePath -l ${jtlFile}_${num_threads[1]}_3min.jtl
+# sed -i 's/"ThreadGroup.num_threads">1000/"ThreadGroup.num_threads">3000/g' $jmxFilePath
+# sh jmeterShellPath -n -t $jmxFilePath -l ${jtlFile}_${num_threads[2]}_3min.jtl
+# sed -i 's/"ThreadGroup.num_threads">3000/"ThreadGroup.num_threads">5000/g' $jmxFilePath
+# sh jmeterShellPath -n -t $jmxFilePath -l ${jtlFile}_${num_threads[3]}_3min.jtl
 
 # # 还原到原先状态
-# sed -i 's/"LoopController.loops">-1/"LoopController.loops">1/g' $jmxFile
-# sed -i 's/"ThreadGroup.scheduler">true/"ThreadGroup.scheduler">false/g' $jmxFile
-# sed -i 's/"ThreadGroup.duration">180/"ThreadGroup.duration">/g' $jmxFile
-# sed -i 's/"ThreadGroup.num_threads">5000/"ThreadGroup.num_threads">1/g' $jmxFile
+# sed -i 's/"LoopController.loops">-1/"LoopController.loops">1/g' $jmxFilePath
+# sed -i 's/"ThreadGroup.scheduler">true/"ThreadGroup.scheduler">false/g' $jmxFilePath
+# sed -i 's/"ThreadGroup.duration">180/"ThreadGroup.duration">/g' $jmxFilePath
+# sed -i 's/"ThreadGroup.num_threads">5000/"ThreadGroup.num_threads">1/g' $jmxFilePath
 
 
