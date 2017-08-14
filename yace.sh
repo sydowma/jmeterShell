@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # 命令执行参数
 #
@@ -6,7 +6,8 @@
 #
 
 # 功能需求
-# 1. 根据输入的命令来增加压测任务
+# 1. 根据输入的命令来增加压测任务  完成
+# 2. 提前设置好线程数 读取执行
 
 
 # 已知问题
@@ -18,23 +19,21 @@
 jmeterShellPath=$1
 jmxFile=$2
 
-while true
-do
-    if [ ! ${jmeterShellPath} ]
-    then
-        echo '请输入JMeter路径'
-        continue
-    fi
 
-    if [ ! ${jmxFile} ]
-    then
-        echo '请输入JMX文件路径'
-        continue
-    fi
+# 判断jmeter路径是否为空
+if [ ! ${jmeterShellPath} ]
+then
+    echo '请输入JMeter路径'
+    exit
+fi
+
+if [ ! ${jmxFile} ]
+then
+    echo '请输入JMX文件路径'
+    exit
+fi
 
 
-    break
-done
 #echo $a
 
 # 文件名zlr
