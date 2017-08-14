@@ -15,24 +15,60 @@
 # 1. zip压缩后不在当前目录
 
 
+# 接收选项式的参数输入
+while [[ $# -gt 1 ]]
+do
+key="$1"
+
+case $key in
+    # jmeter 路径
+    -j|--jmeter)
+    jmeterShellPath="$2"
+    shift # past argument
+    ;;
+    # jmx 文件路径
+    -m|--jmx)
+    jmxFile="$2"
+    shift # past argument
+    ;;
+    # zip文件保存路径
+    -z|--zip)
+    zipPath="$2"
+    shift # past argument
+    ;;
+    --default)
+    DEFAULT=YES
+    ;;
+    *)
+            # unknown option
+    echo '使用方法, -j jmeter路径\n -m jmx文件路径\n -z zip文件保存路径'
+    ;;
+
+esac
+shift # past argument or value
+done
+
+if [[ -n $1 ]]; then
+    echo "Last line of file specified as non-opt/last argument:"
+    tail -1 $1
+fi
 
 
-jmeterShellPath=$1
-jmxFile=$2
+# jmeterShellPath=$1
+# jmxFile=$2
 
 
 # 判断jmeter路径是否为空
-if [ ! ${jmeterShellPath} ]
+if [ ! ${jmeterShellPath} ] || [ ! ${jmxFile} ]
 then
-    echo '请输入JMeter路径'
+    printf "%s\n" "使用方法"
+    printf "%s\n" "-j  jmeter sh文件路径, 通常在 jmeter/bin 目录下"
+    printf "%s\n" "-m  jmx文件路径"
+    printf "%s\n" "-z  zip文件保存路径"
     exit
 fi
 
-if [ ! ${jmxFile} ]
-then
-    echo '请输入JMX文件路径'
-    exit
-fi
+
 
 
 #echo $a
