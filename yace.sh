@@ -3,7 +3,8 @@
 # 命令执行参数
 #
 # sh jmeterShellPath -n -t score_select.jmx -l score_select.jtl
-#
+# Author: MARK
+# Email:  mamian521@gmail.com
 
 # 功能需求
 # 1. 根据输入的命令来增加压测任务  完成
@@ -109,13 +110,20 @@ printf "\e[31m %-5s\e[0m\n" "$NUM_THREADS" # 颜色为红色
 # 调用函数，让信息显示出来
 screen_echo
 
-
+# 重置控制器
+sed -i "s/\"ThreadGroup.scheduler\">[a-zA-Z]*/\"ThreadGroup.scheduler\">false/g" $jmxFile
 
 auto_stress_test() {
+
+
     jtlFileName=${jtlFile}_${NUM_THREADS}_1.jtl
+    # 暂时先放在这里 , 后续要指定目录
+    jtlFilePath=$(pwd))/${jtlFileName}.zip
+    echo $jtlFilePath
     sed -i "s/\"ThreadGroup.num_threads\">[0-9]*/\"ThreadGroup.num_threads\">$NUM_THREADS/g" $jmxFile
     sh $jmeterShellPath -n -t $jmxFile -l $jtlFileName
-    zip ${jtlFileName}.zip ${jtlFileName}
+    zip ${jtlFilePath} ${jtlFileName}
+    # tar -zcvf /home/xahot.tar.gz /xahot
 }
 
 
@@ -155,7 +163,7 @@ auto_stress_test
 
 # # 还原到原先状态
 # sed -i 's/"LoopController.loops">-1/"LoopController.loops">1/g' $jmxFile
-# sed -i 's/"ThreadGroup.scheduler>"true/"ThreadGroup.scheduler">false/g' $jmxFile
+# sed -i 's/"ThreadGroup.scheduler">true/"ThreadGroup.scheduler">false/g' $jmxFile
 # sed -i 's/"ThreadGroup.duration">180/"ThreadGroup.duration">/g' $jmxFile
 # sed -i 's/"ThreadGroup.num_threads">5000/"ThreadGroup.num_threads">1/g' $jmxFile
 
