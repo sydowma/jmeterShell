@@ -113,8 +113,10 @@ screen_echo
 
 
 auto_stress_test() {
+    jtlFileName=${jtlFile}_${NUM_THREADS}_1.jtl
     sed -i "s/\"ThreadGroup.num_threads\">[0-9]*/\"ThreadGroup.num_threads\">$NUM_THREADS/g" $jmxFile
-    sh $jmeterShellPath -n -t $jmxFile -l ${jtlFile}_${NUM_THREADS}_1.jtl
+    sh $jmeterShellPath -n -t $jmxFile -l $jtlFileName
+    zip ${jtlFileName}.zip ${jtlFileName}
 }
 
 
@@ -158,4 +160,4 @@ auto_stress_test
 # sed -i 's/"ThreadGroup.duration">180/"ThreadGroup.duration">/g' $jmxFile
 # sed -i 's/"ThreadGroup.num_threads">5000/"ThreadGroup.num_threads">1/g' $jmxFile
 
-zip ${jtlFile}.zip ${jtlFile}*
+
