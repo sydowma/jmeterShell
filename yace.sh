@@ -118,7 +118,7 @@ auto_stress_test() {
 
     jtlFileName=${jtlFile}_${NUM_THREADS}_1.jtl
     # 暂时先放在这里 , 后续要指定目录
-    jtlFilePath=$(pwd))/${jtlFileName}.zip
+    jtlFilePath=$(pwd)/${jtlFileName}.zip
     echo $jtlFilePath
     sed -i "s/\"ThreadGroup.num_threads\">[0-9]*/\"ThreadGroup.num_threads\">$NUM_THREADS/g" $jmxFile
     sh $jmeterShellPath -n -t $jmxFile -l $jtlFileName
