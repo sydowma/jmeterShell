@@ -1,4 +1,4 @@
-# jmeterShell
+## mamian_yace
 
 ### 功能介绍:
 
@@ -29,4 +29,26 @@
 ```
 
 
+
+## leiran_yace
+
+### 功能介绍
+
+通过修改配置文件，修改jmx文件信息，进而执行jmeter
+
+```shell
+./leiran_yace.sh zlr3.jmx
+# 在JMeter/bin 目录下运行
+```
+
+
+
+### 配置文件信息
+
+```shell
+100
+50c
+150
+# 100次*1+50*3分钟+150*1
+```
 
