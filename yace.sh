@@ -39,15 +39,15 @@ case $key in
     # 不用read
     ;;
 
-    -nr|--noread)
+    -n|--noread)
     # LEN="$#"
-    nr="$2"
+    n="$2"
     # 循环遍历保存每个线程组数字
     # echo "提前设置的好的线程组数量是 "$@" "
     # 已知问题 -nr 参数必须在最后面
     # NUM_THREADS=( "$@" )
     # NUM_THREADS_LENGTH=$#
-    NUM_THREADS[1]=$nr
+    NUM_THREADS[1]=$n
 
 
     # 过滤参数
@@ -71,6 +71,13 @@ case $key in
     # done
     shift # past argument # resume (to find  later )
     ;;
+
+    -d|-duration)
+    duration=$2
+    # 时间
+
+    shift
+    ;;
     --default)
     DEFAULT=YES
     ;;
@@ -80,7 +87,9 @@ case $key in
     printf "%s\n" "-j 指定 Apache JMeter 文件夹路径"
     printf "%s\n" "-m jmx文件路径"
     printf "%s\n" "-z zip文件保存路径"
-    printf "%s\n" "-nr 提前设置的好的线程组数量, 以空格间隔, 依序执行"
+    printf "%s\n" "-n 提前设置的好的线程组数量"
+    printf "%s\n" "-d duration 调度器时间"
+    shift
     ;;
     *)
             # unknown option
@@ -103,9 +112,8 @@ done
 if [ ! ${jmeterShellPath} ] || [ ! ${jmxFilePath} ]
 then
     printf "%s\n" "缺少相关参数"
-    printf "%s\n" "-j  jmeter sh文件路径, 通常在 jmeter/bin 目录下"
+    printf "%s\n" "-j  Apache JMeter 目录路径,"
     printf "%s\n" "-m  jmx文件路径"
-    printf "%s\n" "-z  zip文件保存路径"
     exit
 fi
 
@@ -138,22 +146,22 @@ then
     # 如果输入为空格或者回车，显示错误信息，后续代码不再执行，重新循环。
     if [ ! ${NUM_THREADS[1]} ]
     then
-        echo '请输入序号'
+        echo '请输入线程组数量'
         continue
     fi
 
     # 如果输入的不是数字，显示错误信息，后续代码不再执行，重新循环。
     if [[ "${NUM_THREADS[1]}" =~ [^0-9]+ ]]
     then
-        echo '序号是数字'
+        echo '线程组是数字'
         continue
     fi
 
     # 如果输入的以 0 开头的数字、大于等于服务器台数、小于 0，显示错误信息，后续代码不再执行，重新循环。
     # if [[ "${NUM_THREADS}" =~ ^0[0-9]+ ]] || [ ${NUM_THREADS} -ge ${LEN} ] || [ ${NUM_THREADS} -lt 0 ]
-    if [[ "${NUM_THREADS[1]}" =~ ^0[0-9]+ ]] || [ ${NUM_THREADS[1]} -lt 0 ]
+    if [ ${NUM_THREADS[1]} -lt 0 ]
     then
-        echo '请输入存在的序号'
+        echo '请输入线程组数量'
         continue
     fi
 
@@ -204,10 +212,41 @@ NUM_THREADS_LENGTH=${#NUM_THREADS[@]}+1
 # # 调用函数，让信息显示出来
 # screen_echo
 
+# 如果开启调度器 说明是按时间
+echo "duration%s\n" "$duration"
+if [ ${duration} ]
+then
+    # 开启或关闭调度器
+    sed -i "s/\"ThreadGroup.scheduler\">.*</\"ThreadGroup.scheduler\">true</g" $jmxFilePath
+
+    # -1表示循环  如果有时间 duration 此处要改为-1
+    sed -i "s/\"LoopController.loops\">.*</\"LoopController.loops\">-1</g" $jmxFilePath
+
+    sed -i "s/\"ThreadGroup.duration\">.*</\"ThreadGroup.duration\">${duration}</g" $jmxFilePath
+
+else
+    # 开启或关闭调度器
+    sed -i "s/\"ThreadGroup.scheduler\">.*</\"ThreadGroup.scheduler\">false</g" $jmxFilePath
+
+    # -1表示循环  如果有时间 duration 此处要改为-1
+    sed -i "s/\"LoopController.loops\">.*</\"LoopController.loops\">1</g" $jmxFilePath
+
+    sed -i "s/\"ThreadGroup.duration\">.*</\"ThreadGroup.duration\"></g" $jmxFilePath
+
+    # 为了方便命名, 这里把duration 改为1
+    duration=1
+
+fi
 
 
-# 重置控制器
-sed -i "s/\"ThreadGroup.scheduler\">[a-zA-Z]*/\"ThreadGroup.scheduler\">false/g" $jmxFilePath
+
+
+# # 还原到原先状态
+# sed -i 's/"LoopController.loops">-1/"LoopController.loops">1/g' $jmxFilePath
+# sed -i 's/"ThreadGroup.scheduler">true/"ThreadGroup.scheduler">false/g' $jmxFilePath
+# sed -i 's/"ThreadGroup.duration">180/"ThreadGroup.duration">/g' $jmxFilePath
+
+
 
 auto_stress_test() {
 
@@ -219,7 +258,7 @@ auto_stress_test() {
 
         # 开始循环
         # 1. 保存的jtl文件名称
-        jtlFileName=${jtlFile}_${NUM_THREADS[i]}_1.jtl
+        jtlFileName=${jtlFile}_${NUM_THREADS[i]}_${duration}sec.jtl
         # 暂时先放在这里 , 后续要指定目录   ${jtlFileName##*/} 去掉 / 之前的路径
         # 2. 保存的jtl文件路径  现在会保存在 jmx 同一目录下
 
@@ -228,7 +267,7 @@ auto_stress_test() {
 
         # echo $jtlFilePath
         # 3. 修改jmx文件线程数
-        sed -i "s/\"ThreadGroup.num_threads\">[0-9]*/\"ThreadGroup.num_threads\">${NUM_THREADS[$i]}/g" $jmxFilePath
+        sed -i "s/\"ThreadGroup.num_threads\">.*</\"ThreadGroup.num_threads\">${NUM_THREADS[$i]}</g" $jmxFilePath
         # 4. 执行
         sh $jmeterShellPath -n -t $jmxFilePath -l $jtlFileName
             # 压缩
@@ -236,17 +275,16 @@ auto_stress_test() {
         # 如果没有设置 zip path 那就保存在当前文件夹下
         if [ ${zipPath} ]
         then
-            echo "没有zipPath"
             zipSavePath=$zipPath/${jtlFileName##*/}.zip
         else
-            echo "有zipPath"
+
             SCRIPT=$(readlink -f "$jtlFilePath")
             # Absolute path this script is in, thus /home/user/bin
             SCRIPTPATH=$(dirname "$SCRIPT")
             zipSavePath=$SCRIPTPATH/${jtlFileName##*/}.zip
         fi
 
-        echo "${zipSavePath}"
+        printf "zip文件保存路径%s\n" "${zipSavePath}"
         zip ${zipSavePath} ${jtlFileName}
     done
 
