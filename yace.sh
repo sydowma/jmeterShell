@@ -24,7 +24,7 @@ key="$1"
 case $key in
     # jmeter 路径
     -j|--jmeter)
-    jmeterShellPath="$2"
+    jmeterShellPath="$2/bin/jmeter.sh"
     shift # past argument
     ;;
     # jmx 文件路径
@@ -41,12 +41,14 @@ case $key in
 
     -nr|--noread)
     # LEN="$#"
-    # nr="$2"
+    nr="$2"
     # 循环遍历保存每个线程组数字
-    echo "提前设置的好的线程组数量是 "$@" "
+    # echo "提前设置的好的线程组数量是 "$@" "
     # 已知问题 -nr 参数必须在最后面
-    NUM_THREADS=( "$@" )
-    NUM_THREADS_LENGTH=$#
+    # NUM_THREADS=( "$@" )
+    # NUM_THREADS_LENGTH=$#
+    NUM_THREADS[1]=$nr
+
 
     # 过滤参数
     # for((i=1;i<$array_length;i++))
@@ -75,7 +77,7 @@ case $key in
     -h|--help)
             # unknown option
     printf "%s\n" "使用方法"
-    printf "%s\n" "-j jmeter路径"
+    printf "%s\n" "-j 指定 Apache JMeter 文件夹路径"
     printf "%s\n" "-m jmx文件路径"
     printf "%s\n" "-z zip文件保存路径"
     printf "%s\n" "-nr 提前设置的好的线程组数量, 以空格间隔, 依序执行"
@@ -89,10 +91,7 @@ esac
 shift # past argument or value
 done
 
-if [[ -n $1 ]]; then
-    echo "Last line of file specified as non-opt/last argument:"
-    tail -1 $1
-fi
+
 
 
 # jmeterShellPath=$1
@@ -182,7 +181,7 @@ fi
 
 
 # 取线程组数量
-NUM_THREADS_LENGTH=${#NUM_THREADS[@]}
+NUM_THREADS_LENGTH=${#NUM_THREADS[@]}+1
 
 # screen_echo() {
 
