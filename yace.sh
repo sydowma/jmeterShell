@@ -204,6 +204,8 @@ NUM_THREADS_LENGTH=${#NUM_THREADS[@]}+1
 # # 调用函数，让信息显示出来
 # screen_echo
 
+
+
 # 重置控制器
 sed -i "s/\"ThreadGroup.scheduler\">[a-zA-Z]*/\"ThreadGroup.scheduler\">false/g" $jmxFilePath
 
@@ -219,15 +221,33 @@ auto_stress_test() {
         # 1. 保存的jtl文件名称
         jtlFileName=${jtlFile}_${NUM_THREADS[i]}_1.jtl
         # 暂时先放在这里 , 后续要指定目录   ${jtlFileName##*/} 去掉 / 之前的路径
-        # 2. 保存的jtl文件路径
-        jtlFilePath=$zipPath/${jtlFileName##*/}.zip
-        echo $jtlFilePath
+        # 2. 保存的jtl文件路径  现在会保存在 jmx 同一目录下
+
+
+
+
+        # echo $jtlFilePath
         # 3. 修改jmx文件线程数
         sed -i "s/\"ThreadGroup.num_threads\">[0-9]*/\"ThreadGroup.num_threads\">${NUM_THREADS[$i]}/g" $jmxFilePath
         # 4. 执行
         sh $jmeterShellPath -n -t $jmxFilePath -l $jtlFileName
             # 压缩
-        zip ${jtlFilePath} ${jtlFileName}
+
+        # 如果没有设置 zip path 那就保存在当前文件夹下
+        if [ ${zipPath} ]
+        then
+            echo "没有zipPath"
+            zipSavePath=$zipPath/${jtlFileName##*/}.zip
+        else
+            echo "有zipPath"
+            SCRIPT=$(readlink -f "$jtlFilePath")
+            # Absolute path this script is in, thus /home/user/bin
+            SCRIPTPATH=$(dirname "$SCRIPT")
+            zipSavePath=$SCRIPTPATH/${jtlFileName##*/}.zip
+        fi
+
+        echo "${zipSavePath}"
+        zip ${zipSavePath} ${jtlFileName}
     done
 
 
