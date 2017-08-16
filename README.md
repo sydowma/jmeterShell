@@ -11,19 +11,18 @@
 ### 运行方法
 
 ```shell
-./yace.sh -j jmeterPath -m jmxPath 
+./mamian_yace.sh -j jmeterPath -m jmxPath 
 # jmeterPath Apache JMeter 路径  必填
 # jmxPath    JMX 文件 路径  必填
 
-./yace.sh -j jmeterPath -m jmxPath -n 100
+./mamian_yace.sh -j jmeterPath -m jmxPath -n 100
 # 设置线程组数量100
 
-./yace.sh -j jmeterPath -m jmxPath -n 100 -d 120
+./mamian_yace.sh -j jmeterPath -m jmxPath -n 100 -d 120
 # 设置线程组数量100 循环120秒
 
-./yace.sh -j jmeterPath -m jmxPath -n 100 -d 120 -z /home/work
+./mamian_yace.sh -j jmeterPath -m jmxPath -n 100 -d 120 -z /home/work
 # 设置线程组数量100 循环120秒 zip解压缩在/home/work目录下
-
 
 
 ```
