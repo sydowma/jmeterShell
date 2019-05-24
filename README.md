@@ -1,4 +1,6 @@
 ## yace
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fmagaofei%2FjmeterShell.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fmagaofei%2FjmeterShell?ref=badge_shield)
+
 
 ### 功能介绍
 
@@ -58,3 +60,7 @@ chmod 0600 yace.sh
 
 
 
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fmagaofei%2FjmeterShell.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fmagaofei%2FjmeterShell?ref=badge_large)
